@@ -37,7 +37,19 @@
 - (void)setImage:(UIImage *)image{
     _image = image;
     _imageView.image = image;
-    _imageView.size = CGSizeMake(image.size.width*image.scale, image.size.height*image.scale);
+    CGFloat width = image.size.width*image.scale;
+    CGFloat height = image.size.height*image.scale;
+    if(width < self.bounds.size.width || height < self.bounds.size.height){
+        width = self.bounds.size.width;
+        height = width * image.size.height/image.size.width;
+        if(height > self.bounds.size.height){
+            height = self.bounds.size.height;
+            width = self.bounds.size.height * image.size.width/image.size.height;
+        }
+    }
+    CGRect imageFrame = _imageView.frame;
+    imageFrame.size = CGSizeMake(width, height);
+    _imageView.frame = imageFrame;
     
     // Sizes
     CGSize boundsSize = self.bounds.size;
@@ -48,16 +60,16 @@
     CGFloat yScale = boundsSize.height / imageSize.height;  // the scale needed to perfectly fit the image height-wise
     CGFloat minScale = MIN(xScale, yScale);                 // use minimum of these to allow the image to become fully visible
     
+    // Image is smaller than screen so no zooming!
+    if (xScale >= 1 && yScale >= 1) {
+        minScale = 1.0;
+    }
+    
     // Calculate Max
     CGFloat maxScale = 3;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         // Let them go a bit bigger on a bigger screen!
         maxScale = 4;
-    }
-    
-    // Image is smaller than screen so no zooming!
-    if (xScale >= 1 && yScale >= 1) {
-        minScale = 1.0;
     }
     
     // Set min/max zoom
